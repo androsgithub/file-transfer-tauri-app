@@ -26,3 +26,27 @@ I made this app to my personal server, it's use casa os, and i need a better met
 </div>
 
 
+<style>
+*{
+    padding:0;
+    margin:0;
+}
+ .div{
+     width:100%;
+     display:flex;
+     flex-wrap:wrap;
+     flex-direction:column;
+     gap:1rem;
+     padding:0.5rem;
+   
+ }
+ .div img{
+    border-radius:.5rem;
+    width:370px;
+    height:500px;
+    object-fit: cover
+}
+.div h2{
+    width:100%;
+}
+</style>
