@@ -1,4 +1,4 @@
-#File transfer app using Tauri
+# File transfer app using Tauri
 
 I made this app to my personal server, it's use casa os, and i need a better method to share my files with it.
 
