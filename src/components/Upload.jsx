@@ -27,6 +27,12 @@ export const Upload = ({ setMenu }) => {
   useHotkeys("shift+e", () => uploadFiles(), { scopes: ["settings"] });
   useHotkeys("shift+a", () => setMenu("fileList"), { scopes: ["settings"] });
 
+  const handleRemoveAllFiles = () => {
+    setFiles(null);
+    setProgress(0);
+    setCurrentFile(null);
+  };
+
   const uploadFiles = async () => {
     let response;
     let finished;
@@ -36,25 +42,24 @@ export const Upload = ({ setMenu }) => {
       setCurrentFile({ file: files[file], index: parseInt(file) + 1 });
       response = await upload(files[file], setProgress);
       await new Promise((r) => setTimeout(r, 100));
-      if (file == files.length - 1 && files.length > 1) {
+      setIsSending(false);
+      if (response.name == "AxiosError") {
+        setErrorOnSend(response);
+        setCurrentFile(null);
+        setProgress(0);
+        setTimeout(() => setErrorOnSend(null), 750);
+        return;
+      }
+
+      if (file == files.length - 1) {
         finished = true;
       }
     }
-    setIsSending(false);
 
-    if (response.name == "AxiosError") {
-      setErrorOnSend(response);
-      setCurrentFile(null);
-      setProgress(0);
-      await new Promise((r) => setTimeout(r, 250));
-      setTimeout(() => setErrorOnSend(null), 750);
-    }
-
-    if (response.status === 201 || finished) {
+    if (response.status === 201 && finished) {
       setEnviado(true);
       setFiles(null);
       setCurrentFile(null);
-  
       setTimeout(() => setEnviado(false), 750);
       setProgress(0);
     }
@@ -98,7 +103,8 @@ export const Upload = ({ setMenu }) => {
       {files || progress > 0 ? (
         <HasFile
           files={files}
-          setFiles={setFiles}
+          handleRemoveAllFiles={handleRemoveAllFiles}
+          setCurrentFile={setCurrentFile}
           progress={progress}
           currentFile={currentFile}
           errorOnSend={errorOnSend}
@@ -210,11 +216,11 @@ export const Upload = ({ setMenu }) => {
 
 const HasFile = ({
   files,
-  setFiles,
   progress,
   currentFile,
   errorOnSend,
   isSending,
+  handleRemoveAllFiles,
 }) => {
   return (
     <div
@@ -268,7 +274,7 @@ const HasFile = ({
 
       {!errorOnSend && (
         <button
-          onClick={() => setFiles(null)}
+          onClick={handleRemoveAllFiles}
           className="flex justify-center items-center absolute right-0 top-0 text-neutral-400 hover:text-neutral-200 hover:cursor-default transition-all"
         >
           <X size={20} className="m-2" />

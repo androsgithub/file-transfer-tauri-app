@@ -5,6 +5,7 @@ import {
   FileImage,
   FileVideo,
   LoaderCircle,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -17,7 +18,10 @@ export const File = ({ title }) => {
   return (
     <a
       className="flex w-full h-full items-center hover:bg-white/10 animate-fadeInOpacity rounded-sm"
-      href={`http://localhost:5475/files/${title.replaceAll("#", "%23")}`}
+      href={`${localStorage.getItem("server-ip")}/files/${title.replaceAll(
+        "#",
+        "%23"
+      )}`}
       target="_blank"
     >
       <div className="p-1">
@@ -43,6 +47,7 @@ export const File = ({ title }) => {
 
 export const FileList = ({ setMenu }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [files, setFiles] = useState([]);
   const [searchText, setSearchText] = useState("");
   useEffect(() => {
@@ -52,15 +57,16 @@ export const FileList = ({ setMenu }) => {
   const getFiles = async () => {
     setIsLoading(true);
     const _files = await axios
-      .get("http://localhost:5475/files/")
-      .then((response) => response.data.files);
+      .get(localStorage.getItem("server-ip") + "/files")
+      .then((response) => response.data.files)
+      .catch(() => setError(true));
     setFiles(_files);
 
     setIsLoading(false);
   };
 
   return (
-    <div className="flex flex-col gap-3 h-full w-full" data-tauri-drag-region>
+    <div className="flex flex-col gap-1 h-full w-full" data-tauri-drag-region>
       <div className="flex justify-between items-center" data-tauri-drag-region>
         <button
           onClick={() => setMenu("upload")}
@@ -97,18 +103,39 @@ export const FileList = ({ setMenu }) => {
         </div>
       ) : (
         <>
-          <div className="h-[80vh]">
+          <div className="h-[80vh]" data-tauri-drag-region>
+            {error && (
+              <div className="flex h-full">
+                <div
+                  className="flex flex-col w-full items-center justify-center gap-1 text-xs animate-scaleIn h-full p-4"
+                  data-tauri-drag-region
+                >
+                  <X size={58} strokeWidth={2} color="red" />
+                  <span className="text-red-500 text-center text-sm">
+                    Erro ao carregar arquivos
+                  </span>
+                  <span className="text-red-500 text-center text-sm">
+                    Verifique as configurações do aplicativo.
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div
               className="overflow-y-auto overflow-x-hidden flex flex-col gap-4 max-h-[75vh] pr-1"
               data-tauri-drag-region
             >
-              {files
-                .filter((arquivo) => arquivo.includes(searchText))
-                .map((file) => (
-                  <File key={file} title={file} />
-                ))}
+              {!error && (
+                <>
+                  {files
+                    .filter((arquivo) => arquivo.includes(searchText))
+                    .map((file) => (
+                      <File key={file} title={file} />
+                    ))}
+                </>
+              )}
             </div>
-            {files.length == 0 && (
+            {files?.length == 0 && !error && (
               <div
                 className="flex items-center justify-center h-full font-semibold text-neutral-500 animate-scaleIn"
                 data-tauri-drag-region
