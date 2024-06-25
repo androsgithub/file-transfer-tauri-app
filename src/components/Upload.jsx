@@ -24,8 +24,12 @@ export const Upload = ({ setMenu }) => {
   const [errorOnSend, setErrorOnSend] = useState(null);
   const [isSending, setIsSending] = useState(false);
 
-  useHotkeys("shift+e", () => uploadFiles(), { scopes: ["settings"] });
-  useHotkeys("shift+a", () => setMenu("fileList"), { scopes: ["settings"] });
+  useHotkeys("shift+e", () => !isSending && uploadFiles(), {
+    scopes: ["settings"],
+  });
+  useHotkeys("shift+a", () => !isSending && setMenu("fileList"), {
+    scopes: ["settings"],
+  });
 
   const handleRemoveAllFiles = () => {
     setFiles(null);
@@ -128,7 +132,11 @@ export const Upload = ({ setMenu }) => {
         data-tauri-drag-region
       >
         <button
-          disabled={files && localStorage.getItem("server-ip") ? false : true}
+          disabled={
+            !isSending && files && localStorage.getItem("server-ip")
+              ? false
+              : true
+          }
           className={`transition-all flex items-center gap-3 duration-300 relative cursor-default ${
             files ? "hover:bg-white/5" : ""
           } ${
@@ -187,13 +195,13 @@ export const Upload = ({ setMenu }) => {
 
         <button
           className="pl-2 transition-all flex items-center gap-3 text-neutral-300 hover:bg-white/5 p-1 rounded-full w-full"
-          onClick={() => setMenu("fileList")}
+          onClick={() => !isSending && setMenu("fileList")}
         >
           <List size={20} /> Ver todos os arquivos <Badge text="SHIFT + A" />
         </button>
         <button
           className="pl-2 transition-all flex items-center gap-3 text-neutral-300 hover:bg-white/5 p-1 rounded-full w-full"
-          onClick={async () => setMenu("configuracao")}
+          onClick={async () => !isSending && setMenu("configuracao")}
         >
           <Settings
             size={25}
@@ -205,7 +213,7 @@ export const Upload = ({ setMenu }) => {
         </button>
         <button
           className="pl-2 transition-all flex items-center gap-3 text-neutral-300 hover:bg-white/5 p-1 rounded-full w-full"
-          onClick={async () => await appWindow.close()}
+          onClick={async () => !isSending && (await appWindow.close())}
         >
           <CircleX size={20} /> Sair <Badge text="SHIFT + F" />
         </button>
